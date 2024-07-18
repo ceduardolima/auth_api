@@ -1,4 +1,4 @@
-package domain.account;
+package com.example.authApi.domain.account;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

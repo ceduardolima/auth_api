@@ -1,6 +1,6 @@
-package domain.user;
+package com.example.authApi.domain.user;
 
-import domain.account.Account;
+import com.example.authApi.domain.account.Account;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
