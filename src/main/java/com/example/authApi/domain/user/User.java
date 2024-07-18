@@ -1,6 +1,7 @@
 package com.example.authApi.domain.user;
 
 import com.example.authApi.domain.account.Account;
+import com.example.authApi.domain.account.dtos.RegisterAccountDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,4 +20,9 @@ public class User {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id")
     private Account account;
+
+    public User(Account account, RegisterAccountDto data) {
+        this.account = account;
+        this.name = data.name();
+    }
 }
