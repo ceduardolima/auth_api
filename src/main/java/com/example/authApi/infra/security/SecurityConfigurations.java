@@ -1,4 +1,4 @@
-package com.example.authApi.infra;
+package com.example.authApi.infra.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

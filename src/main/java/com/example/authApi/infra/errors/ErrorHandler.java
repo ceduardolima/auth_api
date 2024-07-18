@@ -1,4 +1,4 @@
-package com.example.authApi.infra;
+package com.example.authApi.infra.errors;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.DuplicateKeyException;
