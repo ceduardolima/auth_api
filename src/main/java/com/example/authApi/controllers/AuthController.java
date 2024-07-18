@@ -2,6 +2,7 @@ package com.example.authApi.controllers;
 
 import com.example.authApi.domain.account.Account;
 import com.example.authApi.domain.account.AccountRepository;
+import com.example.authApi.domain.account.dtos.LoginAccountDto;
 import com.example.authApi.domain.account.dtos.RegisterAccountDto;
 import com.example.authApi.domain.user.User;
 import com.example.authApi.domain.user.UserRepository;
@@ -38,5 +39,15 @@ public class AuthController {
         final User savedUser = userRepository.save(user);
         var uri = uriComponentsBuilder.path("/user/{id}").buildAndExpand(savedUser.getId()).toUri();
         return ResponseEntity.created(uri).body(new UserDetailsDto(savedUser));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity login(@RequestBody @Valid LoginAccountDto data) {
+        var account = accountRepository.getReferenceByEmail(data.email());
+        if (account == null || !account.getPassword().equals(data.password())) {
+            return ResponseEntity.notFound().build();
+        }
+        User user = userRepository.getReferenceByAccountId(account.getId());
+        return ResponseEntity.ok(new UserDetailsDto(user));
     }
 }
