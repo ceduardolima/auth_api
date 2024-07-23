@@ -56,7 +56,7 @@ public class Account implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return !active;
     }
 
     @Override

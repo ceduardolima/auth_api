@@ -3,10 +3,12 @@ package com.example.authApi.controllers;
 import com.example.authApi.domain.account.Account;
 import com.example.authApi.domain.account.AccountRepository;
 import com.example.authApi.domain.account.dtos.LoginAccountDto;
+import com.example.authApi.domain.tokens.EmailConfirmationToken;
 import com.example.authApi.domain.user.User;
 import com.example.authApi.domain.user.UserRepository;
 import com.example.authApi.domain.user.dtos.UserDetailsDto;
 import com.example.authApi.infra.security.TokenService;
+import com.example.authApi.services.EmailConfirmationTokenService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,16 +36,4 @@ public class UserController {
         return ResponseEntity.ok(new UserDetailsDto(user));
     }
 
-    @PostMapping("/sendEmail")
-    public ResponseEntity sendEmailValidation(@RequestHeader("Authorization") String token, @RequestBody LoginAccountDto data) {
-        String tokenJWT = tokenService.getTokenJWT(token);
-        String tokenSubject = tokenService.getSubject(tokenJWT);
-        boolean emailIsValid = tokenSubject.equals(data.email());
-        if (emailIsValid) {
-            Account account = accountRepository.getReferenceByEmail(data.email());
-            if (encoder.matches(data.password(), account.getPassword()))
-                return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
 }
