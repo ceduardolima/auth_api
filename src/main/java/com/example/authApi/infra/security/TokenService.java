@@ -46,4 +46,8 @@ public class TokenService {
         }
     }
 
+    public String getTokenJWT(String rawToken) {
+        return rawToken.replace("Bearer ", "");
+    }
+
 }
