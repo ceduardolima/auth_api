@@ -9,6 +9,7 @@ import com.example.authApi.domain.user.UserRepository;
 import com.example.authApi.domain.user.dtos.UserDetailsDto;
 import com.example.authApi.infra.security.TokenJWTDto;
 import com.example.authApi.infra.security.TokenService;
+import com.example.authApi.services.EmailServiceImpl;
 import com.example.authApi.services.RegisterAccountService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,8 @@ public class AuthController {
     private PasswordEncoder encoder;
     @Autowired
     private TokenService tokenService;
+    @Autowired
+    private EmailServiceImpl emailService;
 
     @PostMapping("/register")
     public ResponseEntity register(@RequestBody @Valid RegisterAccountDto data, UriComponentsBuilder uriComponentsBuilder) {
