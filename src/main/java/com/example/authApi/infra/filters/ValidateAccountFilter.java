@@ -1,7 +1,7 @@
 package com.example.authApi.infra.filters;
 
-import com.example.authApi.domain.account.Account;
 import com.example.authApi.domain.account.AccountRepository;
+import com.example.authApi.domain.errors.EmailNotVerifiedException;
 import com.example.authApi.infra.security.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -9,9 +9,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.Http403ForbiddenEntryPoint;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -31,7 +30,7 @@ public class ValidateAccountFilter extends OncePerRequestFilter {
             String subject = tokenService.getSubject(token);
             Boolean accountIsValid = accountRepository.existsByEmailAndActiveTrue(subject);
             if (!accountIsValid) {
-                throw new RuntimeException("Email não foi validado");
+                throw new EmailNotVerifiedException("Email não foi validado");
             }
         }
         filterChain.doFilter(request, response);
