@@ -4,6 +4,7 @@ import com.example.authApi.domain.account.Account;
 import com.example.authApi.domain.tokens.EmailConfirmationToken;
 import com.example.authApi.domain.tokens.EmailConfirmationTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -13,6 +14,8 @@ import java.util.UUID;
 public class EmailConfirmationTokenService {
     @Autowired
     private EmailConfirmationTokenRepository emailConfirmationTokenRepository;
+    @Value("${api.security.token.emailValidation}")
+    private Integer expiration;
 
     public void saveConfirmationToken(EmailConfirmationToken token) {
         emailConfirmationTokenRepository.save(token);
@@ -24,7 +27,7 @@ public class EmailConfirmationTokenService {
                 null,
                 token,
                 LocalDateTime.now(),
-                LocalDateTime.now().plusMinutes(15),
+                LocalDateTime.now().plusMinutes(expiration),
                 null,
                 account
         );
