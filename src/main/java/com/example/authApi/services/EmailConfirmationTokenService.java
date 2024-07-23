@@ -6,6 +6,7 @@ import com.example.authApi.domain.tokens.EmailConfirmationTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -31,5 +32,18 @@ public class EmailConfirmationTokenService {
                 null,
                 account
         );
+    }
+
+    @Transactional
+    public EmailConfirmationToken confirmToken(String token) {
+        var confirmationToken = emailConfirmationTokenRepository.findByToken(token).orElseThrow(() -> new IllegalStateException("Token não foi emitido"));
+        if (confirmationToken.isExpired())
+            throw new IllegalStateException("Token expirado");
+        else if (confirmationToken.isConfirmed())
+            throw new IllegalStateException("Token já foi confirmado");
+        confirmationToken.confirmToken();
+        Account account = confirmationToken.getAccount();
+        account.setActive(true);
+        return confirmationToken;
     }
 }

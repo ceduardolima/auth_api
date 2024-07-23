@@ -16,6 +16,7 @@ import com.example.authApi.services.EmailServiceImpl;
 import com.example.authApi.services.RegisterAccountService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -63,17 +64,9 @@ public class AuthController {
         String tokenJWT = tokenService.genToken((Account) auth.getPrincipal());
         return ResponseEntity.ok(new TokenJWTDto(tokenJWT));
     }
-    @PostMapping("/sendEmail")
-    public ResponseEntity sendEmailValidation(@RequestHeader("Authorization") String token, @RequestBody LoginAccountDto data) {
-        String tokenJWT = tokenService.getTokenJWT(token);
-        String tokenSubject = tokenService.getSubject(tokenJWT);
-        boolean emailIsValid = tokenSubject.equals(data.email());
-        if (emailIsValid) {
-            Account account = accountRepository.getReferenceByEmail(data.email());
-            if (encoder.matches(data.password(), account.getPassword())) {
-                return ResponseEntity.ok().build();
-            }
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    @PostMapping("/validateEmail")
+    public ResponseEntity validateEmail(@RequestParam(value = "token") String token) {
+        emailConfirmationTokenService.confirmToken(token);
+        return ResponseEntity.ok().build();
     }
 }

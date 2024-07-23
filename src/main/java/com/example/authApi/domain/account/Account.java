@@ -2,10 +2,7 @@ package com.example.authApi.domain.account;
 
 import com.example.authApi.domain.account.dtos.RegisterAccountDto;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,6 +13,7 @@ import java.util.List;
 @Table(name = "account", indexes = @Index(name = "account_email_index", columnList = "email", unique = true))
 @Entity(name = "Account")
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of = "id")
@@ -37,6 +35,10 @@ public class Account implements UserDetails {
         this.email = email;
         this.password = password;
         this.active = active;
+    }
+
+    public void active() {
+        this.setActive(true);
     }
 
     @Override

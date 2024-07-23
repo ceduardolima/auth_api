@@ -29,4 +29,17 @@ public class EmailConfirmationToken {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id")
     private Account account;
+
+    public Boolean isExpired() {
+        System.out.println("now: " + LocalDateTime.now());
+        return expiresAt.isBefore(LocalDateTime.now());
+    }
+
+    public Boolean isConfirmed() {
+        return confirmedAt != null;
+    }
+
+    public void confirmToken() {
+        this.setConfirmedAt(LocalDateTime.now());
+    }
 }
