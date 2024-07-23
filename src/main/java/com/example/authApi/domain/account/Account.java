@@ -25,15 +25,18 @@ public class Account implements UserDetails {
     private Long id;
     private String email;
     private String password;
+    private Boolean active;
 
     public Account(RegisterAccountDto data) {
         this.email = data.email();
         this.password = data.password();
+        this.active = false;
     }
 
-    public Account(String email, String password) {
+    public Account(String email, String password, Boolean active) {
         this.email = email;
         this.password = password;
+        this.active = active;
     }
 
     @Override
@@ -64,5 +67,15 @@ public class Account implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "Account{" +
+                "id=" + id +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", active=" + active +
+                '}';
     }
 }

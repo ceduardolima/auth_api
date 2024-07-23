@@ -17,14 +17,14 @@ public class TokenService {
 
     @Value("${api.security.token.secret}")
     private String secret;
+    static private final String ISSUER = "API authApi";
 
     public String genToken(Account account) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             return JWT.create()
-                    .withIssuer("API authApi")
+                    .withIssuer(ISSUER)
                     .withSubject(account.getEmail())
-                    .withClaim("id", account.getId())
                     .withExpiresAt(expirationDate())
                     .sign(algorithm);
         } catch (JWTCreationException exception) {
@@ -39,8 +39,9 @@ public class TokenService {
     public String getSubject(String tokenJWT) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
-            return JWT.require(algorithm).withIssuer("API authApi").build().verify(tokenJWT).getSubject();
+            return JWT.require(algorithm).withIssuer(ISSUER).build().verify(tokenJWT).getSubject();
         } catch (JWTVerificationException exception) {
+            System.out.println(exception);
             throw new RuntimeException("Token JWT inválido ou expirado!");
         }
     }

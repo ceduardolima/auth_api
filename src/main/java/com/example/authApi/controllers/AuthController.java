@@ -49,7 +49,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Email já existe");
         }
         final String encodedPassword = encoder.encode(data.password());
-        final Account account = new Account(data.email(), encodedPassword);
+        final Account account = new Account(data.email(), encodedPassword, false);
         final Account savedAccount = accountRepository.save(account);
         final User user = new User(savedAccount, data);
         final User savedUser = userRepository.save(user);

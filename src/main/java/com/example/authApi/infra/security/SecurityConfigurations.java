@@ -1,5 +1,6 @@
 package com.example.authApi.infra.security;
 
+import com.example.authApi.infra.filters.ValidateAccountFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,6 +21,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfigurations {
     @Autowired
     private SecurityFilter securityFilter;
+    @Autowired
+    private ValidateAccountFilter validateAccountFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -28,7 +31,7 @@ public class SecurityConfigurations {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
                         authorizationManagerRequestMatcherRegistry
-                                .requestMatchers(HttpMethod.POST, "/auth/login")
+                                .requestMatchers(HttpMethod.POST, "/auth/**")
                                 .permitAll()
                                 .anyRequest()
                                 .authenticated()
