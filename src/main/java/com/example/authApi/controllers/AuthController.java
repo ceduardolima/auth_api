@@ -39,34 +39,26 @@ public class AuthController {
     @Autowired
     private AuthenticationManager manager;
     @Autowired
-    private PasswordEncoder encoder;
-    @Autowired
-    private TokenService tokenService;
-    @Autowired
-    private EmailServiceImpl emailService;
-    @Autowired
     private EmailConfirmationTokenService emailConfirmationTokenService;
     @Autowired
     private AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity register(@RequestBody @Valid RegisterAccountDto data, UriComponentsBuilder uriComponentsBuilder) {
+    public ResponseEntity register(@RequestBody @Valid RegisterAccountDto data) {
         Account account = authService.registerAccount(data);
         EmailConfirmationToken confirmationToken = emailConfirmationTokenService.createToken(account);
-        emailConfirmationTokenService.saveConfirmationToken(confirmationToken);
+        emailConfirmationTokenService.sendConfirmationToken(data.email(), data.name(), confirmationToken.getToken());
         return ResponseEntity.ok(confirmationToken.getToken());
     }
 
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody @Valid LoginAccountDto data) {
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(data.email(), data.password());
-        Authentication auth = manager.authenticate(authToken);
-        String tokenJWT = tokenService.genToken((Account) auth.getPrincipal());
+        String tokenJWT = authService.authenticate(data);
         return ResponseEntity.ok(new TokenJWTDto(tokenJWT));
     }
-    @PostMapping("/validateEmail")
+    @GetMapping("/confirmToken")
     public ResponseEntity validateEmail(@RequestParam(value = "token") String token) {
         emailConfirmationTokenService.confirmToken(token);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("confirmed");
     }
 }

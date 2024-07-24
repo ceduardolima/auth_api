@@ -1,11 +1,13 @@
 package com.example.authApi.infra.security;
 
 import com.example.authApi.infra.filters.ValidateAccountFilter;
+import com.example.authApi.services.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -31,7 +33,11 @@ public class SecurityConfigurations {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
                         authorizationManagerRequestMatcherRegistry
-                                .requestMatchers(HttpMethod.POST, "/auth/**")
+                                .requestMatchers(HttpMethod.POST, "/auth/register")
+                                .permitAll()
+                                .requestMatchers(HttpMethod.POST, "/auth/login")
+                                .permitAll()
+                                .requestMatchers(HttpMethod.GET, "/auth/confirmToken")
                                 .permitAll()
                                 .anyRequest()
                                 .authenticated()
