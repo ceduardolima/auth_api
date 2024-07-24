@@ -33,9 +33,7 @@ public class SecurityConfigurations {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
                         authorizationManagerRequestMatcherRegistry
-                                .requestMatchers(HttpMethod.POST, "/auth/register")
-                                .permitAll()
-                                .requestMatchers(HttpMethod.POST, "/auth/login")
+                                .requestMatchers(HttpMethod.POST, "/auth/register", "/auth/login")
                                 .permitAll()
                                 .requestMatchers(HttpMethod.GET, "/auth/confirmToken")
                                 .permitAll()

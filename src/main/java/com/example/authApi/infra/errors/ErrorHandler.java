@@ -8,9 +8,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class ErrorHandler {
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity genericError(ResponseStatusException e) {
+        return createErrorDto(e.getStatusCode().value(), e.getMessage());
+    }
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity handleError404() {
@@ -29,5 +35,9 @@ public class ErrorHandler {
 
     private ResponseEntity<ErrorDto> createErrorDto(HttpStatus status, String message) {
         return ResponseEntity.status(status).body(new ErrorDto(status.value(), message));
+    }
+
+    private ResponseEntity<ErrorDto> createErrorDto(int status, String message) {
+        return ResponseEntity.status(status).body(new ErrorDto(status, message));
     }
 }
