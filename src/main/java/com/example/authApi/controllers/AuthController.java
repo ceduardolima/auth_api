@@ -5,11 +5,14 @@ import com.example.authApi.domain.account.AccountRepository;
 import com.example.authApi.domain.account.dtos.LoginAccountDto;
 import com.example.authApi.domain.account.dtos.RegisterAccountDto;
 import com.example.authApi.domain.tokens.EmailConfirmationToken;
+import com.example.authApi.domain.user.User;
 import com.example.authApi.domain.user.UserRepository;
 import com.example.authApi.infra.security.TokenJWTDto;
 import com.example.authApi.services.AuthService;
 import com.example.authApi.services.EmailConfirmationTokenService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 public class AuthController {
 
+    static  private Logger log = LoggerFactory.getLogger(AuthController.class);
     @Autowired
     private AccountRepository accountRepository;
     @Autowired
@@ -43,9 +47,18 @@ public class AuthController {
         String tokenJWT = authService.authenticate(data);
         return ResponseEntity.ok(new TokenJWTDto(tokenJWT));
     }
+
     @GetMapping("/confirmToken")
     public ResponseEntity validateEmail(@RequestParam(value = "token") String token) {
         emailConfirmationTokenService.confirmToken(token);
         return ResponseEntity.ok("confirmed");
+    }
+
+    @PostMapping("/resendToken")
+    public ResponseEntity resendToken(@RequestBody @Valid LoginAccountDto data) {
+        Account account = authService.validateExistingAccount(data);
+        if (account == null) return ResponseEntity.ok().build();
+        emailConfirmationTokenService.resendTokenIfIsInvalid(account);
+        return ResponseEntity.ok().build();
     }
 }

@@ -6,7 +6,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Entity
+@Entity(name = "tb_email_confirmation_token")
 @Table(name = "tb_email_confirmation_token")
 @AllArgsConstructor
 @NoArgsConstructor
