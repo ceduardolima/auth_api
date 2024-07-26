@@ -9,6 +9,8 @@ import com.example.authApi.domain.user.UserRepository;
 import com.example.authApi.domain.user.dtos.UserDetailsDto;
 import com.example.authApi.infra.security.TokenService;
 import com.example.authApi.services.EmailConfirmationTokenService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
+@SecurityRequirement(name = "bearer-key")
 public class UserController {
     private final Logger log = LoggerFactory.getLogger(getClass());
     @Autowired

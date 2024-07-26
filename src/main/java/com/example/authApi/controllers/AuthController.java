@@ -10,6 +10,7 @@ import com.example.authApi.domain.user.UserRepository;
 import com.example.authApi.infra.security.TokenJWTDto;
 import com.example.authApi.services.AuthService;
 import com.example.authApi.services.EmailConfirmationTokenService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
