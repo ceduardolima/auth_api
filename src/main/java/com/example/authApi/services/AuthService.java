@@ -4,6 +4,7 @@ import com.example.authApi.domain.account.Account;
 import com.example.authApi.domain.account.AccountRepository;
 import com.example.authApi.domain.account.dtos.LoginAccountDto;
 import com.example.authApi.domain.account.dtos.RegisterAccountDto;
+import com.example.authApi.domain.account.validators.RegisterValidator;
 import com.example.authApi.domain.user.User;
 import com.example.authApi.domain.user.UserRepository;
 import com.example.authApi.infra.security.TokenService;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -31,10 +33,11 @@ public class AuthService {
     private AuthenticationManager manager;
     @Autowired
     private TokenService tokenService;
+    private List<RegisterValidator> validators;
 
     @Transactional
     public Account registerAccount(RegisterAccountDto data) {
-        validateExistingAccount(data.email());
+        validators.forEach(v -> v.validate(data));
         Account account = createAndSaveAccount(data.email(), data.password());
         final Account savedAccount = accountRepository.save(account);
         final User user = new User(savedAccount, data);
@@ -42,14 +45,7 @@ public class AuthService {
         return account;
     }
 
-    public void validateExistingAccount(String email) {
-        boolean emailAlreadyExists = accountRepository.existsByEmail(email);
-        if (emailAlreadyExists) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
-        }
-    }
-
-    public Account createAndSaveAccount(String email, String password) {
+    private Account createAndSaveAccount(String email, String password) {
         final String encodedPassword = encoder.encode(password);
         final Account account = new Account(email, encodedPassword, false);
         accountRepository.save(account);

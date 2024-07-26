@@ -5,6 +5,7 @@ import com.example.authApi.domain.account.AccountRepository;
 import com.example.authApi.domain.account.dtos.LoginAccountDto;
 import com.example.authApi.domain.tokens.EmailConfirmationToken;
 import com.example.authApi.domain.tokens.EmailConfirmationTokenRepository;
+import com.example.authApi.domain.tokens.validators.ConfirmTokenValidator;
 import com.example.authApi.domain.user.User;
 import com.example.authApi.domain.user.UserRepository;
 import com.example.authApi.utils.EmailTemplates;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -36,6 +38,8 @@ public class EmailConfirmationTokenService {
     private AccountRepository accountRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private List<ConfirmTokenValidator> confirmTokenValidators;
 
     public void saveConfirmationToken(EmailConfirmationToken token) {
         emailConfirmationTokenRepository.save(token);
@@ -59,10 +63,7 @@ public class EmailConfirmationTokenService {
     @Transactional
     public void confirmToken(String token) {
         var confirmationToken = emailConfirmationTokenRepository.findByToken(token).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invalid token"));
-        if (confirmationToken.isExpired())
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token already expired");
-        else if (confirmationToken.isConfirmed())
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token already confirmed");
+        confirmTokenValidators.forEach(v -> v.validate(confirmationToken));
         confirmationToken.confirmToken();
         Account account = confirmationToken.getAccount();
         account.setActive(true);
