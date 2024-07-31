@@ -8,6 +8,8 @@ import com.example.authApi.domain.account.validators.RegisterValidator;
 import com.example.authApi.domain.user.User;
 import com.example.authApi.domain.user.UserRepository;
 import com.example.authApi.infra.security.TokenService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,6 +25,7 @@ import java.util.Optional;
 
 @Service
 public class AuthService {
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
     @Autowired
     private AccountRepository accountRepository;
     @Autowired
@@ -33,14 +36,13 @@ public class AuthService {
     private AuthenticationManager manager;
     @Autowired
     private TokenService tokenService;
+    @Autowired
     private List<RegisterValidator> validators;
 
-    @Transactional
     public Account registerAccount(RegisterAccountDto data) {
         validators.forEach(v -> v.validate(data));
         Account account = createAndSaveAccount(data.email(), data.password());
-        final Account savedAccount = accountRepository.save(account);
-        final User user = new User(savedAccount, data);
+        final User user = new User(account, data);
         userRepository.save(user);
         return account;
     }
@@ -48,18 +50,15 @@ public class AuthService {
     private Account createAndSaveAccount(String email, String password) {
         final String encodedPassword = encoder.encode(password);
         final Account account = new Account(email, encodedPassword, false);
-        accountRepository.save(account);
-        return account;
+        return accountRepository.save(account);
     }
 
-    @Transactional
     public String authenticate(LoginAccountDto data) {
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(data.email(), data.password());
         Authentication auth = manager.authenticate(authToken);
         return tokenService.genToken((Account) auth.getPrincipal());
     }
 
-    @Transactional
     public Account validateExistingAccount(LoginAccountDto data) {
         final Optional<Account> accountOptional = accountRepository.findByEmail(data.email());
         if (accountOptional.isEmpty()) return null;

@@ -15,15 +15,18 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
-    static  private Logger log = LoggerFactory.getLogger(AuthController.class);
+    static private Logger log = LoggerFactory.getLogger(AuthController.class);
     @Autowired
     private AccountRepository accountRepository;
     @Autowired
@@ -36,6 +39,7 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/register")
+    @Transactional
     public ResponseEntity register(@RequestBody @Valid RegisterAccountDto data) {
         Account account = authService.registerAccount(data);
         EmailConfirmationToken confirmationToken = emailConfirmationTokenService.createToken(account);
@@ -44,18 +48,22 @@ public class AuthController {
     }
 
     @PostMapping("/login")
+    @Transactional
     public ResponseEntity login(@RequestBody @Valid LoginAccountDto data) {
+        User user = userRepository.findByAccountEmail(data.email()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
         String tokenJWT = authService.authenticate(data);
-        return ResponseEntity.ok(new TokenJWTDto(tokenJWT));
+        return ResponseEntity.ok(new TokenJWTDto(user, tokenJWT));
     }
 
     @GetMapping("/confirmToken")
+    @Transactional
     public ResponseEntity validateEmail(@RequestParam(value = "token") String token) {
         emailConfirmationTokenService.confirmToken(token);
         return ResponseEntity.ok("confirmed");
     }
 
     @PostMapping("/resendToken")
+    @Transactional
     public ResponseEntity resendToken(@RequestBody @Valid LoginAccountDto data) {
         Account account = authService.validateExistingAccount(data);
         if (account == null) return ResponseEntity.ok().build();

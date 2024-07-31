@@ -45,7 +45,6 @@ public class EmailConfirmationTokenService {
         emailConfirmationTokenRepository.save(token);
     }
 
-    @Transactional
     public EmailConfirmationToken createToken(Account account) {
         String token = UUID.randomUUID().toString();
         EmailConfirmationToken confirmationToken = new EmailConfirmationToken(
@@ -60,7 +59,6 @@ public class EmailConfirmationTokenService {
         return confirmationToken;
     }
 
-    @Transactional
     public void confirmToken(String token) {
         var confirmationToken = emailConfirmationTokenRepository.findByToken(token).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invalid token"));
         confirmTokenValidators.forEach(v -> v.validate(confirmationToken));
@@ -69,7 +67,6 @@ public class EmailConfirmationTokenService {
         account.setActive(true);
     }
 
-    @Transactional
     public void resendTokenIfIsInvalid(Account account) {
         Boolean isValid = isTokenValid(account.getEmail());
         if (isValid) return;
@@ -85,7 +82,7 @@ public class EmailConfirmationTokenService {
             String template = EmailTemplates.confirmToken(name, link);
             emailService.sendSimpleEmail(to, template);
         } catch (RuntimeException e) {
-            log.error("Send email error!");
+            log.error("Send email error!", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error to send the confirmation email");
         }
     }

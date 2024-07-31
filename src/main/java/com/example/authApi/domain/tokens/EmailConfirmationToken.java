@@ -31,7 +31,6 @@ public class EmailConfirmationToken {
     private Account account;
 
     public Boolean isExpired() {
-        System.out.println("now: " + LocalDateTime.now());
         return expiresAt.isBefore(LocalDateTime.now());
     }
 

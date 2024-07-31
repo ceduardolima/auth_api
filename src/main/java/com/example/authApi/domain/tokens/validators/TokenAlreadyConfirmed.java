@@ -8,7 +8,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Component
 public class TokenAlreadyConfirmed implements ConfirmTokenValidator {
-    private EmailConfirmationTokenRepository emailConfirmationTokenRepository;
     @Override
     public void validate(EmailConfirmationToken token) {
         if(token.isConfirmed())
