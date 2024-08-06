@@ -1,6 +1,7 @@
 package com.example.authApi.services;
 
 import com.example.authApi.domain.account.AccountRepository;
+import com.example.authApi.domain.account.dtos.LoginAccountDto;
 import com.example.authApi.domain.account.dtos.RegisterAccountDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,10 +10,13 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.server.ResponseStatusException;
+
+import javax.naming.AuthenticationException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -34,7 +38,7 @@ class AuthServiceTest {
 
     @Test
     void registerNewAccount() {
-        var registerData = new RegisterAccountDto("new-email@email.com", "123456", "name");
+        var registerData = createRegisterAccountDt("new-email@email.com");
         var registerAccount = authService.registerAccount(registerData);
         assertThat(registerAccount.getId()).isNotNull();
         accountRepository.deleteById(registerAccount.getId());
@@ -42,11 +46,39 @@ class AuthServiceTest {
 
     @Test
     void registerAlreadyExistingAccount_return_httpsStatusConflict() {
-        var registerData = new RegisterAccountDto("email@email.com", "123456", "name");
+        var registerData = createRegisterAccountDt("email@email.com");
         var result = assertThrows(ResponseStatusException.class, () -> {
             authService.registerAccount(registerData);
         });
         assertThat(result).isInstanceOf(ResponseStatusException.class);
     }
 
+    RegisterAccountDto createRegisterAccountDt(String email) {
+        return new RegisterAccountDto(email, "123456", "name");
+    }
+
+    @Test
+    void authenticateNonExistingEmail_return_httpStatus404() {
+        final var loginDto = new LoginAccountDto("wrong-email@email.com", "123456");
+        var result = assertThrows(BadCredentialsException.class, () -> {
+            authService.authenticate(loginDto);
+        });
+        assertThat(result).isInstanceOf(BadCredentialsException.class);
+    }
+
+    @Test
+    void authenticateWrongPassword_return_httpStatus404() {
+        final var loginDto = new LoginAccountDto("email@email.com", "wrong-pass");
+        var result = assertThrows(BadCredentialsException.class, () -> {
+            authService.authenticate(loginDto);
+        });
+        assertThat(result).isInstanceOf(BadCredentialsException.class);
+    }
+
+    @Test
+    void authenticateExistingUser_return_httpStatusOK() {
+        final var loginDto = new LoginAccountDto("email@email.com", "123456");
+        final var token = authService.authenticate(loginDto);
+        assertThat(token).isNotNull();
+    }
 }
