@@ -10,6 +10,11 @@ import com.example.authApi.domain.user.UserRepository;
 import com.example.authApi.infra.security.TokenJWTDto;
 import com.example.authApi.services.AuthService;
 import com.example.authApi.services.EmailConfirmationTokenService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -38,30 +43,47 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "409", description = "Email already exist", content = @Content),
+            @ApiResponse(responseCode = "200", description = "Register account and send a email validation", content = @Content),
+    })
     @PostMapping("/register")
     @Transactional
     public ResponseEntity register(@RequestBody @Valid RegisterAccountDto data) {
         Account account = authService.registerAccount(data);
         EmailConfirmationToken confirmationToken = emailConfirmationTokenService.createToken(account);
         emailConfirmationTokenService.sendConfirmationToken(data.email(), data.name(), confirmationToken.getToken());
-        return ResponseEntity.ok(confirmationToken.getToken());
+        return ResponseEntity.ok().build();
     }
 
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "404", description = "Account not founded", content = @Content),
+            @ApiResponse(responseCode = "200", description = "Return token"),
+    })
     @PostMapping("/login")
     @Transactional
-    public ResponseEntity login(@RequestBody @Valid LoginAccountDto data) {
+    public ResponseEntity<TokenJWTDto> login(@RequestBody @Valid LoginAccountDto data) {
         User user = userRepository.findByAccountEmail(data.email()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
         String tokenJWT = authService.authenticate(data);
         return ResponseEntity.ok(new TokenJWTDto(user, tokenJWT));
     }
 
+    @Operation(summary = "Validate an account created recently")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "404", description = "Invalid token", content = @Content),
+            @ApiResponse(responseCode = "200", description = "Enable account access", content = @Content),
+    })
     @GetMapping("/confirmToken")
     @Transactional
-    public ResponseEntity validateEmail(@RequestParam(value = "token") String token) {
+    public ResponseEntity validateEmail(@Parameter(description = "Email validation token") @RequestParam(value = "token") String token) {
         emailConfirmationTokenService.confirmToken(token);
         return ResponseEntity.ok("confirmed");
     }
 
+    @Operation(summary = "Resend the email validation token for account validation")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Send the email if account exists", content = @Content),
+    })
     @PostMapping("/resendToken")
     @Transactional
     public ResponseEntity resendToken(@RequestBody @Valid LoginAccountDto data) {

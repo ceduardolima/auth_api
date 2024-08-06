@@ -10,6 +10,9 @@ import com.example.authApi.domain.user.dtos.UserDetailsDto;
 import com.example.authApi.infra.security.TokenService;
 import com.example.authApi.services.EmailConfirmationTokenService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +36,13 @@ public class UserController {
     @Autowired
     private PasswordEncoder encoder;
 
+    @Operation(summary = "Return the user information")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "403", description = "Token or Id is invalid", content = @Content),
+            @ApiResponse(responseCode = "200", description = "Enable account access"),
+    })
     @GetMapping("/{id}")
-    public ResponseEntity detail(@PathVariable Long id) {
+    public ResponseEntity<UserDetailsDto> detail(@PathVariable Long id) {
         User user = userRepository.getReferenceById(id);
         return ResponseEntity.ok(new UserDetailsDto(user));
     }
