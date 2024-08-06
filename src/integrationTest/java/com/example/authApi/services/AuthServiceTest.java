@@ -1,5 +1,6 @@
 package com.example.authApi.services;
 
+import com.example.authApi.domain.account.Account;
 import com.example.authApi.domain.account.AccountRepository;
 import com.example.authApi.domain.account.dtos.LoginAccountDto;
 import com.example.authApi.domain.account.dtos.RegisterAccountDto;
@@ -80,5 +81,28 @@ class AuthServiceTest {
         final var loginDto = new LoginAccountDto("email@email.com", "123456");
         final var token = authService.authenticate(loginDto);
         assertThat(token).isNotNull();
+    }
+
+    @Test
+    void validateExistingAccount_return_account() {
+        final var loginDto = new LoginAccountDto("email@email.com", "123456");
+        final var account = authService.validateExistingAccount(loginDto);
+        assertThat(account).isNotNull();
+        assertThat(account.getEmail()).isEqualTo(loginDto.email());
+        assertThat(account.getPassword()).isNotEqualTo(loginDto.email());
+    }
+
+    @Test
+    void validateNonExistingEmail_return_null() {
+        final var loginDto = new LoginAccountDto("wrong@email.com", "123456");
+        final var account = authService.validateExistingAccount(loginDto);
+        assertThat(account).isNull();
+    }
+
+    @Test
+    void validateWrongPassword_return_account() {
+        final var loginDto = new LoginAccountDto("email@email.com", "wrong-pass");
+        final var account = authService.validateExistingAccount(loginDto);
+        assertThat(account).isNull();
     }
 }
